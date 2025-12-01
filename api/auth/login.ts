@@ -29,8 +29,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Generate Meta OAuth URL
     const authUrl = UserAuthManager.generateMetaOAuthUrl(state);
 
-    // Redirect to Meta OAuth
-    res.redirect(302, authUrl);
+    // Use HTML redirect instead of 302 to ensure cookie is stored before navigation
+    // Some browsers don't store cookies from 302 redirects to cross-origin destinations
+    res.setHeader('Content-Type', 'text/html');
+    res.status(200).send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta http-equiv="refresh" content="0;url=${authUrl}">
+        </head>
+        <body>
+          <p>Redirecting to Facebook...</p>
+          <script>window.location.href = "${authUrl}";</script>
+        </body>
+      </html>
+    `);
   } catch (error) {
     console.error('OAuth login error:', error);
     res.status(500).json({
