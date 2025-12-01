@@ -254,29 +254,15 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     </div>
 
     <script>
-        async function startLogin() {
+        function startLogin() {
             const btn = document.querySelector('.login-btn');
             const loading = document.getElementById('loading');
 
             btn.style.display = 'none';
             loading.style.display = 'block';
 
-            try {
-                const response = await fetch('/api/auth/login');
-                const data = await response.json();
-
-                if (data.success) {
-                    window.location.href = data.authUrl;
-                } else {
-                    alert('Login failed: ' + data.message);
-                    btn.style.display = 'inline-block';
-                    loading.style.display = 'none';
-                }
-            } catch (error) {
-                alert('Network error: ' + error.message);
-                btn.style.display = 'inline-block';
-                loading.style.display = 'none';
-            }
+            // Navigate directly - the server will set the cookie and redirect to Facebook
+            window.location.href = '/api/auth/login';
         }
 
         // Check if user is already logged in

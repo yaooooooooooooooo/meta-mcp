@@ -29,12 +29,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Generate Meta OAuth URL
     const authUrl = UserAuthManager.generateMetaOAuthUrl(state);
 
-    // Return the authorization URL
-    res.status(200).json({
-      success: true,
-      authUrl: authUrl,
-      message: 'Redirect user to this URL to begin OAuth flow'
-    });
+    // Redirect to Meta OAuth
+    res.redirect(302, authUrl);
   } catch (error) {
     console.error('OAuth login error:', error);
     res.status(500).json({
