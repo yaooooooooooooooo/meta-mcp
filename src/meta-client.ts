@@ -420,6 +420,14 @@ export class MetaApiClient {
       `${objectId}/insights?${query}`
     );
 
+    // Debug: Log the actual response from Meta
+    console.log("[meta-client] Meta API insights response", {
+      objectId,
+      hasData: !!response.data,
+      dataLength: response.data?.length ?? 0,
+      rawResponse: JSON.stringify(response).substring(0, 1000),
+    });
+
     return PaginationHelper.parsePaginatedResponse(response);
   }
 
