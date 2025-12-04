@@ -293,15 +293,32 @@ const handler = async (req: Request) => {
             .string()
             .optional()
             .describe("Date preset like 'last_7d', 'last_30d'"),
+          time_range: z
+            .object({
+              since: z.string().describe("Start date (YYYY-MM-DD)"),
+              until: z.string().describe("End date (YYYY-MM-DD)"),
+            })
+            .optional()
+            .describe("Custom date range for insights"),
+          time_increment: z
+            .number()
+            .min(1)
+            .max(90)
+            .optional()
+            .describe("Number of days per data point (1 for daily, 7 for weekly)"),
           fields: z
             .array(z.string())
             .optional()
             .describe("Specific metrics to retrieve"),
           limit: z.number().optional().describe("Number of results to return"),
         },
-        async ({ object_id, level, date_preset, fields, limit }, context) => {
+        async ({ object_id, level, date_preset, time_range, time_increment, fields, limit }, context) => {
           try {
-            console.log("📊 Getting insights for:", object_id);
+            console.log("📊 Getting insights for:", object_id, {
+              date_preset,
+              time_range,
+              time_increment,
+            });
 
             if (!authHeader) {
               throw new Error("Authentication required");
@@ -325,8 +342,17 @@ const handler = async (req: Request) => {
             const params: Record<string, any> = {
               level,
               limit: limit || 25,
-              date_preset: date_preset || "last_7d",
             };
+
+            // Use time_range if provided, otherwise fall back to date_preset
+            if (time_range) {
+              params.time_range = time_range;
+            } else {
+              params.date_preset = date_preset || "last_7d";
+            }
+
+            // Add time_increment for daily breakdowns (default to 1 for daily data)
+            params.time_increment = time_increment !== undefined ? time_increment : 1;
 
             if (fields && fields.length > 0) {
               params.fields = fields;
