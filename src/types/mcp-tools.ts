@@ -371,6 +371,12 @@ export const GetInsightsSchema = z.object({
     })
     .optional()
     .describe("Custom date range for insights"),
+  time_increment: z
+    .number()
+    .min(1)
+    .max(90)
+    .optional()
+    .describe("Number of days per data point (1 for daily, 7 for weekly, etc.)"),
   fields: z
     .array(z.string())
     .optional()

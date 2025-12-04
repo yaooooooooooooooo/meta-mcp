@@ -27,6 +27,7 @@ export function registerAnalyticsTools(
       level,
       date_preset,
       time_range,
+      time_increment,
       fields,
       breakdowns,
       limit,
@@ -43,6 +44,13 @@ export function registerAnalyticsTools(
           params.time_range = time_range;
         } else {
           params.date_preset = "last_7d"; // Default to last 7 days
+        }
+
+        // Add time_increment for daily/weekly breakdowns (default to daily)
+        if (time_increment !== undefined) {
+          params.time_increment = time_increment;
+        } else {
+          params.time_increment = 1; // Default to daily data
         }
 
         if (fields && fields.length > 0) {
