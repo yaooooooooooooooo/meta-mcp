@@ -403,6 +403,19 @@ export class MetaApiClient {
     }
 
     const query = this.buildQueryString(queryParams);
+
+    // Debug: Log the actual query being sent to Meta
+    console.log("[meta-client] Sending insights request to Meta", {
+      objectId,
+      queryParams: {
+        time_increment: queryParams.time_increment,
+        time_range: queryParams.time_range,
+        date_preset: queryParams.date_preset,
+        level: queryParams.level,
+      },
+      queryString: query.substring(0, 500),
+    });
+
     const response = await this.makeRequest<MetaApiResponse<AdInsights>>(
       `${objectId}/insights?${query}`
     );
