@@ -360,20 +360,6 @@ const handler = async (req: Request) => {
 
             const insights = await metaClient.getInsights(object_id, params);
 
-            // Debug: Log what we're returning to AdPilot
-            console.log("📤 Returning insights to AdPilot", {
-              object_id,
-              hasData: !!insights.data,
-              dataLength: insights.data?.length ?? 0,
-              firstRow: insights.data?.[0] ? JSON.stringify(insights.data[0]).substring(0, 500) : "no data",
-              params_used: {
-                time_range: params.time_range,
-                time_increment: params.time_increment,
-                date_preset: params.date_preset,
-                level: params.level,
-              },
-            });
-
             return {
               content: [
                 {
