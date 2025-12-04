@@ -32,6 +32,17 @@ export function registerAnalyticsTools(
       breakdowns,
       limit,
     }) => {
+      // Debug: Log what the MCP tool receives
+      console.log("[analytics] get_insights received params", {
+        object_id,
+        level,
+        date_preset,
+        time_range,
+        time_increment,
+        hasTimeRange: time_range !== undefined,
+        hasTimeIncrement: time_increment !== undefined,
+      });
+
       try {
         const params: Record<string, any> = {
           level,
