@@ -12,6 +12,7 @@ import { registerAnalyticsTools } from "./tools/analytics.js";
 import { registerAudienceTools } from "./tools/audiences.js";
 import { registerCreativeTools } from "./tools/creatives.js";
 import { registerOAuthTools } from "./tools/oauth.js";
+import { registerTargetingTools } from "./tools/targeting.js";
 import { registerCampaignResources } from "./resources/campaigns.js";
 import { registerInsightsResources } from "./resources/insights.js";
 import { registerAudienceResources } from "./resources/audiences.js";
@@ -89,6 +90,8 @@ async function main() {
     console.error("   ✅ Creative tools registered");
     registerOAuthTools(server, auth);
     console.error("   ✅ OAuth tools registered");
+    registerTargetingTools(server, auth);
+    console.error("   ✅ Targeting tools registered");
 
     // Register all resources
     console.error("📚 Registering resources...");
@@ -344,6 +347,16 @@ async function main() {
           "get_meta_api_reference",
           "get_quick_fixes",
           "verify_account_setup",
+          // Targeting Research tools
+          "search_interests",
+          "get_interest_suggestions",
+          "search_behaviors",
+          "search_demographics",
+          "search_geo_locations",
+          // Budget Scheduling tools
+          "create_budget_schedule",
+          "list_budget_schedules",
+          "delete_budget_schedule",
           // Utility tools
           "get_ad_accounts",
           "health_check",

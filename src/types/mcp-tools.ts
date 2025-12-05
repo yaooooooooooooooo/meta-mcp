@@ -1002,3 +1002,73 @@ export type CreativeValidationEnhancedParams = z.infer<
   typeof CreativeValidationEnhancedSchema
 >;
 export type UploadImageFromUrlParams = z.infer<typeof UploadImageFromUrlSchema>;
+
+// ==================== TARGETING RESEARCH SCHEMAS ====================
+
+export const SearchInterestsSchema = z.object({
+  query: z.string().describe("Keyword to search for interests (e.g., 'golf', 'cooking', 'fitness')"),
+  limit: z.number().min(1).max(100).default(25).describe("Maximum results to return"),
+  locale: z.string().default("en_US").describe("Locale for results (e.g., en_US, es_ES)"),
+});
+
+export const GetInterestSuggestionsSchema = z.object({
+  interest_list: z.array(z.string()).min(1).describe("Array of interest names to get suggestions for (e.g., ['Golf', 'Tennis'])"),
+  limit: z.number().min(1).max(100).default(25).describe("Maximum results to return"),
+  locale: z.string().default("en_US").describe("Locale for results"),
+});
+
+export const SearchBehaviorsSchema = z.object({
+  limit: z.number().min(1).max(100).default(50).describe("Maximum results to return"),
+  locale: z.string().default("en_US").describe("Locale for results"),
+});
+
+export const SearchDemographicsSchema = z.object({
+  demographic_class: z
+    .enum(["demographics", "life_events", "industries", "income", "family_statuses", "work_employers", "work_positions"])
+    .default("demographics")
+    .describe("Category of demographics to search"),
+  limit: z.number().min(1).max(100).default(50).describe("Maximum results to return"),
+  locale: z.string().default("en_US").describe("Locale for results"),
+});
+
+export const SearchGeoLocationsSchema = z.object({
+  query: z.string().describe("Location name to search (e.g., 'New York', 'California', 'United States')"),
+  location_types: z
+    .array(z.enum(["country", "region", "city", "zip", "geo_market", "electoral_district"]))
+    .optional()
+    .describe("Filter by location types"),
+  limit: z.number().min(1).max(100).default(25).describe("Maximum results to return"),
+  locale: z.string().default("en_US").describe("Locale for results"),
+});
+
+// ==================== BUDGET SCHEDULING SCHEMAS ====================
+
+export const CreateBudgetScheduleSchema = z.object({
+  campaign_id: z.string().describe("The campaign ID to create the budget schedule for"),
+  budget_value: z.string().describe("Budget amount in account currency (in cents, e.g., '50000' for $500)"),
+  budget_value_type: z
+    .enum(["ABSOLUTE", "MULTIPLIER"])
+    .describe("ABSOLUTE: set exact budget amount; MULTIPLIER: multiply current budget (e.g., '2' doubles it)"),
+  time_start: z.number().describe("Unix timestamp for when the budget change should start"),
+  time_end: z.number().describe("Unix timestamp for when the budget should revert to original"),
+});
+
+export const ListBudgetSchedulesSchema = z.object({
+  campaign_id: z.string().describe("The campaign ID to list budget schedules for"),
+});
+
+export const DeleteBudgetScheduleSchema = z.object({
+  budget_schedule_id: z.string().describe("The budget schedule ID to delete"),
+});
+
+// Targeting Research Type Exports
+export type SearchInterestsParams = z.infer<typeof SearchInterestsSchema>;
+export type GetInterestSuggestionsParams = z.infer<typeof GetInterestSuggestionsSchema>;
+export type SearchBehaviorsParams = z.infer<typeof SearchBehaviorsSchema>;
+export type SearchDemographicsParams = z.infer<typeof SearchDemographicsSchema>;
+export type SearchGeoLocationsParams = z.infer<typeof SearchGeoLocationsSchema>;
+
+// Budget Scheduling Type Exports
+export type CreateBudgetScheduleParams = z.infer<typeof CreateBudgetScheduleSchema>;
+export type ListBudgetSchedulesParams = z.infer<typeof ListBudgetSchedulesSchema>;
+export type DeleteBudgetScheduleParams = z.infer<typeof DeleteBudgetScheduleSchema>;
