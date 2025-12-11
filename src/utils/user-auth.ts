@@ -294,7 +294,41 @@ export class UserAuthManager {
   }
 
   /**
+   * Authenticate using API key (for server-to-server calls that don't expire)
+   * API key format: "apikey_{userId}_{secret}"
+   */
+  static async authenticateWithApiKey(apiKey: string): Promise<UserSession | null> {
+    const expectedSecret = process.env.MCP_API_KEY_SECRET;
+    if (!expectedSecret) {
+      console.warn('MCP_API_KEY_SECRET not configured');
+      return null;
+    }
+
+    // API key format: apikey_{userId}_{secret}
+    const match = apiKey.match(/^apikey_(.+)_([a-f0-9]{32,})$/);
+    if (!match) {
+      return null;
+    }
+
+    const [, userId, secret] = match;
+
+    // Validate secret using timing-safe comparison
+    const crypto = await import('crypto');
+    const expectedBuffer = Buffer.from(expectedSecret);
+    const providedBuffer = Buffer.from(secret);
+
+    if (expectedBuffer.length !== providedBuffer.length ||
+        !crypto.timingSafeEqual(expectedBuffer, providedBuffer)) {
+      return null;
+    }
+
+    // Return session for the specified user
+    return await this.getUserSession(userId);
+  }
+
+  /**
    * Authenticate user from request headers
+   * Supports both JWT Bearer tokens and API keys
    */
   static async authenticateUser(authHeader: string | null): Promise<UserSession | null> {
     const token = this.extractBearerToken(authHeader);
@@ -302,6 +336,12 @@ export class UserAuthManager {
       return null;
     }
 
+    // Check if it's an API key (for server-to-server auth)
+    if (token.startsWith('apikey_')) {
+      return await this.authenticateWithApiKey(token);
+    }
+
+    // Otherwise, treat as JWT
     const decoded = await this.verifySessionToken(token);
     if (!decoded) {
       return null;
