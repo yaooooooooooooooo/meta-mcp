@@ -11,7 +11,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="facebook-domain-verification" content="xwm2hgoe468jjlygf4ia2su6af29xn" />
     <title>Meta Ads MCP Server</title>
     <style>
         * {
