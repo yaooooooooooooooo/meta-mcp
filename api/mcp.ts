@@ -2349,6 +2349,368 @@ const handler = async (req: Request) => {
       );
 
       // OAuth Tools
+      // ==========================================
+      // TARGETING RESEARCH TOOLS
+      // ==========================================
+
+      // Search Interests Tool
+      server.tool(
+        "search_interests",
+        "Search for targetable interests by keyword. Returns interest IDs, names, audience sizes, and category paths. Use these IDs in ad set targeting.",
+        {
+          query: z.string().describe("Search query for interests (e.g., 'fitness', 'technology')"),
+          limit: z.number().optional().describe("Maximum results to return (default: 25)"),
+          locale: z.string().optional().describe("Locale for results (default: en_US)"),
+        },
+        async ({ query, limit = 25, locale = "en_US" }) => {
+          try {
+            if (!authHeader) throw new Error("Authentication required");
+            const user = await UserAuthManager.authenticateUser(authHeader);
+            if (!user) throw new Error("Invalid authentication token");
+            const auth = await UserAuthManager.createUserAuthManager(user.userId);
+            if (!auth) throw new Error("Failed to initialize user authentication");
+
+            await auth.refreshTokenIfNeeded();
+            const accessToken = auth.getAccessToken();
+            const baseUrl = "https://graph.facebook.com";
+            const apiVersion = "v23.0";
+
+            const params = new URLSearchParams({
+              type: "adinterest",
+              q: query,
+              limit: String(limit),
+              locale,
+              access_token: accessToken,
+            });
+
+            const url = `${baseUrl}/${apiVersion}/search?${params}`;
+            const response = await fetch(url);
+
+            if (!response.ok) {
+              const error = await response.json();
+              return {
+                content: [{ type: "text", text: JSON.stringify({ success: false, error }, null, 2) }],
+                isError: true,
+              };
+            }
+
+            const data = await response.json() as { data?: any[] };
+            const results = data.data || [];
+
+            return {
+              content: [{
+                type: "text",
+                text: JSON.stringify({
+                  success: true,
+                  query,
+                  count: results.length,
+                  interests: results.map((r: any) => ({
+                    id: r.id,
+                    name: r.name,
+                    audience_size_lower_bound: r.audience_size_lower_bound,
+                    audience_size_upper_bound: r.audience_size_upper_bound,
+                    path: r.path,
+                  })),
+                }, null, 2),
+              }],
+            };
+          } catch (error) {
+            return {
+              content: [{ type: "text", text: JSON.stringify({ success: false, error: error instanceof Error ? error.message : String(error) }, null, 2) }],
+              isError: true,
+            };
+          }
+        }
+      );
+
+      // Get Interest Suggestions Tool
+      server.tool(
+        "get_interest_suggestions",
+        "Get suggested interests based on a list of seed interests. Useful for expanding targeting options and finding related audiences.",
+        {
+          interest_list: z.array(z.string()).describe("List of seed interest names to get suggestions for"),
+          limit: z.number().optional().describe("Maximum results to return (default: 25)"),
+          locale: z.string().optional().describe("Locale for results (default: en_US)"),
+        },
+        async ({ interest_list, limit = 25, locale = "en_US" }) => {
+          try {
+            if (!authHeader) throw new Error("Authentication required");
+            const user = await UserAuthManager.authenticateUser(authHeader);
+            if (!user) throw new Error("Invalid authentication token");
+            const auth = await UserAuthManager.createUserAuthManager(user.userId);
+            if (!auth) throw new Error("Failed to initialize user authentication");
+
+            await auth.refreshTokenIfNeeded();
+            const accessToken = auth.getAccessToken();
+            const baseUrl = "https://graph.facebook.com";
+            const apiVersion = "v23.0";
+
+            const params = new URLSearchParams({
+              type: "adinterestsuggestion",
+              interest_list: JSON.stringify(interest_list),
+              limit: String(limit),
+              locale,
+              access_token: accessToken,
+            });
+
+            const url = `${baseUrl}/${apiVersion}/search?${params}`;
+            const response = await fetch(url);
+
+            if (!response.ok) {
+              const error = await response.json();
+              return {
+                content: [{ type: "text", text: JSON.stringify({ success: false, error }, null, 2) }],
+                isError: true,
+              };
+            }
+
+            const data = await response.json() as { data?: any[] };
+            const results = data.data || [];
+
+            return {
+              content: [{
+                type: "text",
+                text: JSON.stringify({
+                  success: true,
+                  seed_interests: interest_list,
+                  count: results.length,
+                  suggestions: results.map((r: any) => ({
+                    id: r.id,
+                    name: r.name,
+                    audience_size_lower_bound: r.audience_size_lower_bound,
+                    audience_size_upper_bound: r.audience_size_upper_bound,
+                    description: r.description,
+                  })),
+                }, null, 2),
+              }],
+            };
+          } catch (error) {
+            return {
+              content: [{ type: "text", text: JSON.stringify({ success: false, error: error instanceof Error ? error.message : String(error) }, null, 2) }],
+              isError: true,
+            };
+          }
+        }
+      );
+
+      // Search Behaviors Tool
+      server.tool(
+        "search_behaviors",
+        "Get all available behavior targeting options. Behaviors include purchase behaviors, device usage, travel patterns, digital activities, and more.",
+        {
+          limit: z.number().optional().describe("Maximum results to return (default: 50)"),
+          locale: z.string().optional().describe("Locale for results (default: en_US)"),
+        },
+        async ({ limit = 50, locale = "en_US" }) => {
+          try {
+            if (!authHeader) throw new Error("Authentication required");
+            const user = await UserAuthManager.authenticateUser(authHeader);
+            if (!user) throw new Error("Invalid authentication token");
+            const auth = await UserAuthManager.createUserAuthManager(user.userId);
+            if (!auth) throw new Error("Failed to initialize user authentication");
+
+            await auth.refreshTokenIfNeeded();
+            const accessToken = auth.getAccessToken();
+            const baseUrl = "https://graph.facebook.com";
+            const apiVersion = "v23.0";
+
+            const params = new URLSearchParams({
+              type: "adTargetingCategory",
+              class: "behaviors",
+              limit: String(limit),
+              locale,
+              access_token: accessToken,
+            });
+
+            const url = `${baseUrl}/${apiVersion}/search?${params}`;
+            const response = await fetch(url);
+
+            if (!response.ok) {
+              const error = await response.json();
+              return {
+                content: [{ type: "text", text: JSON.stringify({ success: false, error }, null, 2) }],
+                isError: true,
+              };
+            }
+
+            const data = await response.json() as { data?: any[] };
+            const results = data.data || [];
+
+            return {
+              content: [{
+                type: "text",
+                text: JSON.stringify({
+                  success: true,
+                  count: results.length,
+                  behaviors: results.map((r: any) => ({
+                    id: r.id,
+                    name: r.name,
+                    audience_size_lower_bound: r.audience_size_lower_bound,
+                    audience_size_upper_bound: r.audience_size_upper_bound,
+                    description: r.description,
+                    path: r.path,
+                  })),
+                }, null, 2),
+              }],
+            };
+          } catch (error) {
+            return {
+              content: [{ type: "text", text: JSON.stringify({ success: false, error: error instanceof Error ? error.message : String(error) }, null, 2) }],
+              isError: true,
+            };
+          }
+        }
+      );
+
+      // Search Demographics Tool
+      server.tool(
+        "search_demographics",
+        "Get available demographic targeting options by category. Categories include life events, industries, income levels, family status, work employers, and job positions.",
+        {
+          demographic_class: z.string().optional().describe("Demographic category (default: demographics). Options: demographics, life_events, industries, income, family_statuses, work_employers, work_positions"),
+          limit: z.number().optional().describe("Maximum results to return (default: 50)"),
+          locale: z.string().optional().describe("Locale for results (default: en_US)"),
+        },
+        async ({ demographic_class = "demographics", limit = 50, locale = "en_US" }) => {
+          try {
+            if (!authHeader) throw new Error("Authentication required");
+            const user = await UserAuthManager.authenticateUser(authHeader);
+            if (!user) throw new Error("Invalid authentication token");
+            const auth = await UserAuthManager.createUserAuthManager(user.userId);
+            if (!auth) throw new Error("Failed to initialize user authentication");
+
+            await auth.refreshTokenIfNeeded();
+            const accessToken = auth.getAccessToken();
+            const baseUrl = "https://graph.facebook.com";
+            const apiVersion = "v23.0";
+
+            const params = new URLSearchParams({
+              type: "adTargetingCategory",
+              class: demographic_class,
+              limit: String(limit),
+              locale,
+              access_token: accessToken,
+            });
+
+            const url = `${baseUrl}/${apiVersion}/search?${params}`;
+            const response = await fetch(url);
+
+            if (!response.ok) {
+              const error = await response.json();
+              return {
+                content: [{ type: "text", text: JSON.stringify({ success: false, error }, null, 2) }],
+                isError: true,
+              };
+            }
+
+            const data = await response.json() as { data?: any[] };
+            const results = data.data || [];
+
+            return {
+              content: [{
+                type: "text",
+                text: JSON.stringify({
+                  success: true,
+                  demographic_class,
+                  count: results.length,
+                  options: results.map((r: any) => ({
+                    id: r.id,
+                    name: r.name,
+                    audience_size_lower_bound: r.audience_size_lower_bound,
+                    audience_size_upper_bound: r.audience_size_upper_bound,
+                    description: r.description,
+                    type: r.type,
+                  })),
+                }, null, 2),
+              }],
+            };
+          } catch (error) {
+            return {
+              content: [{ type: "text", text: JSON.stringify({ success: false, error: error instanceof Error ? error.message : String(error) }, null, 2) }],
+              isError: true,
+            };
+          }
+        }
+      );
+
+      // Search Geo Locations Tool
+      server.tool(
+        "search_geo_locations",
+        "Search for geographic locations to target in ads. Find countries, regions, cities, zip codes, DMAs (Designated Market Areas), and electoral districts.",
+        {
+          query: z.string().describe("Search query for locations (e.g., 'New York', 'California')"),
+          location_types: z.array(z.string()).optional().describe("Filter by location types: country, region, city, zip, geo_market, electoral_district"),
+          limit: z.number().optional().describe("Maximum results to return (default: 25)"),
+          locale: z.string().optional().describe("Locale for results (default: en_US)"),
+        },
+        async ({ query, location_types, limit = 25, locale = "en_US" }) => {
+          try {
+            if (!authHeader) throw new Error("Authentication required");
+            const user = await UserAuthManager.authenticateUser(authHeader);
+            if (!user) throw new Error("Invalid authentication token");
+            const auth = await UserAuthManager.createUserAuthManager(user.userId);
+            if (!auth) throw new Error("Failed to initialize user authentication");
+
+            await auth.refreshTokenIfNeeded();
+            const accessToken = auth.getAccessToken();
+            const baseUrl = "https://graph.facebook.com";
+            const apiVersion = "v23.0";
+
+            const params = new URLSearchParams({
+              type: "adgeolocation",
+              q: query,
+              limit: String(limit),
+              locale,
+              access_token: accessToken,
+            });
+
+            if (location_types && location_types.length > 0) {
+              params.set("location_types", JSON.stringify(location_types));
+            }
+
+            const url = `${baseUrl}/${apiVersion}/search?${params}`;
+            const response = await fetch(url);
+
+            if (!response.ok) {
+              const error = await response.json();
+              return {
+                content: [{ type: "text", text: JSON.stringify({ success: false, error }, null, 2) }],
+                isError: true,
+              };
+            }
+
+            const data = await response.json() as { data?: any[] };
+            const results = data.data || [];
+
+            return {
+              content: [{
+                type: "text",
+                text: JSON.stringify({
+                  success: true,
+                  query,
+                  count: results.length,
+                  locations: results.map((r: any) => ({
+                    key: r.key,
+                    name: r.name,
+                    type: r.type,
+                    country_code: r.country_code,
+                    country_name: r.country_name,
+                    region: r.region,
+                    region_id: r.region_id,
+                  })),
+                }, null, 2),
+              }],
+            };
+          } catch (error) {
+            return {
+              content: [{ type: "text", text: JSON.stringify({ success: false, error: error instanceof Error ? error.message : String(error) }, null, 2) }],
+              isError: true,
+            };
+          }
+        }
+      );
+
+      // OAuth Tools
       server.tool(
         "get_token_info",
         "Get information about the current access token",
