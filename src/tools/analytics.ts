@@ -74,22 +74,13 @@ export function registerAnalyticsTools(
 
         const result = await metaClient.getInsights(object_id, params);
 
+        // Pass through ALL fields from Meta API response
+        // This enables video metrics, quality rankings, and action_values for revenue
         const insights = result.data.map((insight) => ({
+          ...insight,
+          // Ensure core fields are always present (even if undefined)
           date_start: insight.date_start,
           date_stop: insight.date_stop,
-          impressions: insight.impressions,
-          clicks: insight.clicks,
-          spend: insight.spend,
-          reach: insight.reach,
-          frequency: insight.frequency,
-          ctr: insight.ctr,
-          cpc: insight.cpc,
-          cpm: insight.cpm,
-          cpp: insight.cpp,
-          actions: insight.actions,
-          cost_per_action_type: insight.cost_per_action_type,
-          video_views: insight.video_views,
-          video_view_time: insight.video_view_time,
           account_id: insight.account_id,
           campaign_id: insight.campaign_id,
           adset_id: insight.adset_id,
